@@ -5,8 +5,6 @@ from datetime import date
 import logging
 import config
 
-LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(message)s'
-
 async def main():
 
     yclient = yadisk.AsyncClient(id=config.YDISK_CLIENT_ID, \
@@ -54,7 +52,7 @@ async def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='backup.log', level=logging.DEBUG, format=LOG_FORMAT)
+    logging.basicConfig(filename='backup.log', level=logging.DEBUG, format=config.LOG_FORMAT)
     logger = logging.getLogger(__name__)
     logger.info("Backup started")
     asyncio.run(main())
