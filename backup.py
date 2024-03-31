@@ -3,8 +3,9 @@ import config
 import asyncio
 from datetime import date
 import logging
+import config
 
-LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
+LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(message)s'
 
 async def main():
 
@@ -19,30 +20,30 @@ async def main():
         else:
             logger.error("YDISK_CLIENT_TOKEN is not found or valid")
             return
-        if await yclient.is_dir("/Приложения/tg_bot"):
-            logger.info("CLOUD: tg_bot folder exists")
+        if await yclient.is_dir(f"/Приложения/{config.DB_FOLDER}"):
+            logger.info(f"CLOUD: {config.DB_FOLDER} folder exists")
         else:
-            logger.error("CLOUD: tg_bot folder does NOT exist!")
+            logger.error(f"CLOUD: {config.DB_FOLDER} folder does NOT exist!")
             return
         # renaming the old db backup
         try:
-            await yclient.rename("/Приложения/tg_bot/tg_bot.db", \
-                                f"tg_bot_{date.today().strftime('%d-%m-%Y')}.db")
-            logger.info("RENAME CLOUD: tg_bot.db was successfully renamed")
+            await yclient.rename(f"/Приложения/{config.DB_FOLDER}/{config.DB_NAME}", \
+                                f"{config.DB_FOLDER}_{date.today().strftime('%d-%m-%Y')}.db")
+            logger.info(f"RENAME CLOUD: {config.DB_NAME} was successfully renamed")
         except yadisk.exceptions.PathExistsError:
-            logger.warning("RENAME CLOUD: today's tg_bot.db backup already exists!")
+            logger.warning(f"RENAME CLOUD: today's {config.DB_NAME} backup already exists!")
             # return # not worth leaving
         except yadisk.exceptions.PathNotFoundError:
-            logger.warning("RENAME CLOUD: tg_bot.db was not found!")
+            logger.warning(f"RENAME CLOUD: {config.DB_NAME} was not found!")
             # return # not worth it to leave now since we can do the upload
         except:
             logger.exception("RENAME CLOUD: some weird error")
         # uploading the new db backup
         try:
-            await yclient.upload("tg_bot.db", "/Приложения/tg_bot/tg_bot.db")
-            logger.info("CLOUD: tg_bot.db was successfully uploaded")
+            await yclient.upload(f"{config.DB_NAME}", f"/Приложения/{config.DB_FOLDER}/{config.DB_NAME}")
+            logger.info(f"CLOUD: {config.DB_NAME} was successfully uploaded")
         except FileNotFoundError:
-            logger.error("LOCAL: tg_bot.db was NOT found!")
+            logger.error(f"LOCAL: {config.DB_NAME} was NOT found!")
             return
         except yadisk.exceptions.ForbiddenError:
             logger.error("CLOUD: permission denied")
