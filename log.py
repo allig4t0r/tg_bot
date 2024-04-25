@@ -10,14 +10,11 @@ def log_init() -> Logger:
                                         backupCount=config.LOG_FILECOUNT)
     file_handler.setFormatter(formatter)
     file_handler.setLevel(config.LOG_LEVEL)
-    
     basicConfig(level=config.LOG_LEVEL, 
                 format=config.LOG_FORMAT,
                 handlers=[
                     file_handler
                 ]
     )
-
     logger = getLogger(__name__)
-
     return logger
