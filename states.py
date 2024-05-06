@@ -7,3 +7,4 @@ class Whereami(StatesGroup):
     text_input_studio_name = State()
     text_input_tg_id = State()
     text_input_key_id = State()
+    text_input_confirm = State()

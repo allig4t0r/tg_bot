@@ -41,7 +41,8 @@ class BotDB(object):
         else:
             logger.debug(f"DB: database {self.db_name} was NOT closed")
 
-    def get_studios(self) -> list|None:
+    def get_studios(self) -> list | bool:
+        """SELECT * FROM studios WHERE name LIKE DB_STUDIO_KEYWORD_LIKE"""
         try:
             studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (config.DB_STUDIO_KEYWORD_LIKE,)).fetchall()
             if studios and len(studios) > 0:
@@ -52,6 +53,7 @@ class BotDB(object):
             logger.exception(f"DB: failed to get studios, {e}")
 
     def get_studio(self, data: int | str) -> list|None:
+        """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
         if type(data) == int:
             try:
                 studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ?", (data,)).fetchall()
@@ -63,9 +65,9 @@ class BotDB(object):
                 logger.exception(f"DB: failed to get studio with tg_id {data}, {e}")
         elif type(data) == str:
             try:
-                studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
-                if studios and len(studios) > 0:
-                    return studios
+                studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
+                if studio and len(studio) > 0:
+                    return studio
                 else:
                     return False
             except Error as e:
@@ -91,7 +93,8 @@ class BotDB(object):
             logger.exception(f"DB: failed to check if studio {name} exists, {e}")
             return False
         
-    def delete_studio(self, data: int| str) -> bool:
+    def delete_studio(self, data: int | str) -> bool:
+        """DELETE FROM studios WHERE key_id/name LIKE ?"""
         if type(data) == int:
             try:
                 self.cur.execute("DELETE FROM studios WHERE key_id LIKE ?", (data,)).fetchone()
@@ -111,7 +114,8 @@ class BotDB(object):
                 logger.exception(f"DB: failed to delete studio with name {data}, {e}")
                 return False
         
-    def get_key(self, tg_id: int):
+    def get_key(self, tg_id: int) -> list | bool:
+        """SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ?"""
         try:
             studios = self.cur.execute("SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ?", (tg_id,)).fetchall()
             if studios and len(studios) > 0:
@@ -121,3 +125,23 @@ class BotDB(object):
         except Error as e:
             logger.exception(f"DB: failed to get key/keys for tg_id {tg_id}, {e}")
 
+    def edit_studio(self, data: int | str) -> bool:
+        """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
+        if type(data) == int:
+            try:
+                studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ?", (data,)).fetchall()
+                if studios and len(studios) > 0:
+                    return studios
+                else:
+                    return False
+            except Error as e:
+                logger.exception(f"DB: failed to update studio with tg_id {data}, {e}")
+        elif type(data) == str:
+            try:
+                studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
+                if studio and len(studio) > 0:
+                    return studio
+                else:
+                    return False
+            except Error as e:
+                logger.exception(f"DB: failed to update studio with name {data}, {e}")

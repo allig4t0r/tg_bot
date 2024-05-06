@@ -34,8 +34,8 @@ async def main():
         except yadisk.exceptions.PathNotFoundError:
             logger.warning(f"RENAME CLOUD: {config.DB_NAME} was not found!")
             # return # not worth it to leave now since we can do the upload
-        except:
-            logger.exception("RENAME CLOUD: some weird error")
+        except Exception as e:
+            logger.exception(f"RENAME CLOUD: some weird error, {e}")
         # uploading the new db backup
         try:
             await yclient.upload(f"{config.DB_NAME}", f"/Приложения/{config.DB_FOLDER}/{config.DB_NAME}")
@@ -46,8 +46,8 @@ async def main():
         except yadisk.exceptions.ForbiddenError:
             logger.error("CLOUD: permission denied")
             return
-        except:
-            logger.exception("UPLOAD: some weird error")
+        except Exception as e:
+            logger.exception(f"UPLOAD: some weird error, {e}")
             return
 
 
