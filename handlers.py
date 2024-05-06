@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import Message, FSInputFile
 from aiogram.filters import CommandStart
-from aiogram.utils.markdown import hbold
+from aiogram.utils.markdown import hbold, hpre, hcode
 from aiogram.handlers import ErrorHandler
 from aiogram.fsm.context import FSMContext
 
@@ -11,6 +11,7 @@ from db import BotDB
 from log import log_tail
 from outline import OutlineServer, OutlineServerErrorException, OutlineLibraryException
 from hurry.filesize import size
+from prettytable import PrettyTable
 
 import kb
 import text
@@ -50,7 +51,7 @@ async def start_handler(msg: Message, state: FSMContext) -> None:
                                  reply_markup=kb.ReplyKeyboardRemove())
 
 # моё
-@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_create_studio.casefold())
+@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_studio_create.casefold())
 async def admin_create_studio_start(msg: Message, state: FSMContext):
     await state.set_state(Whereami.text_input_studio_name)
     await msg.answer("Введите имя студии, Повелитель!",
@@ -59,6 +60,7 @@ async def admin_create_studio_start(msg: Message, state: FSMContext):
 @router.message(Whereami.text_input_studio_name, F.text.casefold() == text.text_cancel.casefold())
 @router.message(Whereami.text_input_tg_id, F.text.casefold() == text.text_cancel.casefold())
 @router.message(Whereami.text_input_key_id, F.text.casefold() == text.text_cancel.casefold())
+@router.message(Whereami.text_input_confirm, F.text.casefold() == text.text_no.casefold())
 async def admin_cancel_handler(message: Message, state: FSMContext) -> None:
     current_state = await state.get_state()
     logging.info("STATE: cancelling state %r", current_state)
@@ -113,7 +115,7 @@ async def admin_create_studio_finish(msg: Message, state: FSMContext):
     await state.clear()
     await state.set_state(Whereami.main_menu_admin)
             
-@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_delete_studio.casefold())
+@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_studio_delete.casefold())
 async def admin_delete_studio_start(msg: Message, state: FSMContext):
     await state.set_state(Whereami.text_input_key_id)
     await msg.answer("Укажите key_id нужной студии для удаления, Повелитель.")
@@ -146,8 +148,9 @@ async def admin_delete_studio_finish(msg: Message, state: FSMContext):
         except OutlineLibraryException as e:
             await msg.answer("Непонятная херня")
             logger.exception(f"OUTLINE: что-то с либой, {e}")
-        except:
+        except Exception as e:
             await msg.answer("Непонятная херня")
+            logger.exception(f"Nobody knows what happened here, {e}")
         if db.delete_studio(key_id):
             await msg.answer(f"Ключ с key_id {key_id} был успешно удалён в базе, хозяин.",
                              reply_markup=kb.keyboard_admin)
@@ -159,7 +162,7 @@ async def admin_delete_studio_finish(msg: Message, state: FSMContext):
     await state.clear()
     await state.set_state(Whereami.main_menu_admin)
 
-@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_show_studios.casefold())
+@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_studios_show.casefold())
 async def admin_show_studios(msg: Message, state: FSMContext):
     with BotDB() as db:
         studios = db.get_studios()
@@ -182,17 +185,44 @@ async def admin_logtail(msg: Message):
     message = '\n'.join(str(l) for l in logs)
     await msg.answer(f"{message}")
 
+@router.message(Whereami.main_menu_kolya, F.text.casefold() == text.button_kolya.casefold())
+@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_studios_show_traffic.casefold())
+async def admin_show_traffic_studios(msg: Message, state: FSMContext):
+    await msg.answer("Трафик всех студий")
+    with BotDB() as db, OutlineServer() as outline:
+        studios = db.get_studios()
+        current_state = await state.get_state()
+        if studios:
+            i = 0
+            table = PrettyTable()
+            table.field_names = ["Студия", "Трафик"]
+            while (i < len(studios)):
+                key = outline.get_key(str(studios[i][1]))
+                if key.used_bytes is None:
+                    table.add_row([studios[i][2], 'ноль байтиков'])
+                else:
+                    table.add_row([studios[i][2], size(key.used_bytes)])
+                i += 1
+            if current_state == Whereami.main_menu_admin:
+                await msg.answer(f"{hcode(table)}",
+                                 reply_markup=kb.keyboard_admin)
+            elif current_state == Whereami.main_menu_kolya:
+                await msg.answer(f"{hcode(table)}",
+                                 reply_markup=kb.keyboard_kolya)
+        else:
+            if current_state == Whereami.main_menu_admin:
+                await msg.answer("Студий нет :)",
+                                 reply_markup=kb.keyboard_admin)
+            elif current_state == Whereami.main_menu_kolya:
+                await msg.answer("Колян!!! Студий не существует 🌚",
+                                 reply_markup=kb.keyboard_kolya)
+
 @router.message(Whereami.main_menu_admin)
 async def admin_handler(msg: Message):
     await msg.answer(f"Жду указаний, {hbold('Повелитель')}",
                      reply_markup=kb.keyboard_admin)
 
 # Колян
-@router.message(Whereami.main_menu_kolya, F.text.casefold() == text.button_kolya.casefold())
-@router.message(Whereami.main_menu_admin, F.text.casefold() == text.button_traffic.casefold())
-async def show_traffic_studios(msg: Message):
-    await msg.answer("Трафик всех студий")
-
 @router.message(Whereami.main_menu_kolya)
 async def kolya_handler(msg: Message):
     await msg.answer("There is no escape",
@@ -206,8 +236,7 @@ async def studios_show_key(msg: Message):
         if keys:
             i = 0
             while(i < len(keys)):
-                await msg.answer(f"Ключ для {keys[i][1]}")
-                await msg.answer(keys[i][2])
+                await msg.answer(f"Ключ для {keys[i][1]}:\n{hpre(keys[i][2])}")
                 i += 1
         else:
             await msg.answer("Ключ не найден",
@@ -255,3 +284,4 @@ class MyHandler(ErrorHandler):
             self.exception_name,
             self.exception_message
         )
+

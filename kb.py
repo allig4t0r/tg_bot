@@ -10,14 +10,18 @@ menu_kolya = [
 
 menu_admin = [
     [
-        KeyboardButton(text=text.button_create_studio),
-        KeyboardButton(text=text.button_delete_studio),
-        KeyboardButton(text=text.button_delete_old_studios)
+        KeyboardButton(text=text.button_studio_create),
+        KeyboardButton(text=text.button_studio_edit),
+        KeyboardButton(text=text.button_studio_delete)
     ],
     [
         KeyboardButton(text=text.button_show_log),
-        KeyboardButton(text=text.button_key_refresh),
-        KeyboardButton(text=text.button_show_studios)
+        KeyboardButton(text=text.button_studios_delete_old),
+        KeyboardButton(text=text.button_studios_show)
+    ],
+    [
+        KeyboardButton(text=text.button_studios_show_traffic),
+        KeyboardButton(text=text.button_studios_renew)        
     ]
 ]
 
