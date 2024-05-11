@@ -1,10 +1,13 @@
 from aiogram.fsm.state import State, StatesGroup
 
-class Whereami(StatesGroup):
+class WhereAmI(StatesGroup):
     main_menu_studios = State()
     main_menu_kolya = State()
     main_menu_admin = State()
-    text_input_studio_name = State()
-    text_input_tg_id = State()
-    text_input_key_id = State()
-    text_input_confirm = State()
+
+class AddNewStudio(StatesGroup):
+    studio_name = State()
+    tg_id = State()
+
+class DeleteStudio(StatesGroup):
+    key_id = State()
