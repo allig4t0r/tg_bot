@@ -54,7 +54,7 @@ class BotDB(object):
 
     def get_studio(self, data: int | str) -> list|None:
         """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
-        if type(data) == int:
+        if isinstance(data) == int:
             try:
                 studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ?", (data,)).fetchall()
                 if studios and len(studios) > 0:
@@ -63,7 +63,7 @@ class BotDB(object):
                     return False
             except Error as e:
                 logger.exception(f"DB: failed to get studio with tg_id {data}, {e}")
-        elif type(data) == str:
+        elif isinstance(data) == str:
             try:
                 studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
                 if studio and len(studio) > 0:
@@ -95,7 +95,7 @@ class BotDB(object):
         
     def delete_studio(self, data: int | str) -> bool:
         """DELETE FROM studios WHERE key_id/name LIKE ?"""
-        if type(data) == int:
+        if isinstance(data) == int:
             try:
                 self.cur.execute("DELETE FROM studios WHERE key_id LIKE ?", (data,)).fetchone()
                 self.conn.commit()
@@ -104,7 +104,7 @@ class BotDB(object):
             except Error as e:
                 logger.exception(f"DB: failed to delete studio with key_id {data}, {e}")
                 return False
-        elif type(data) == str:
+        elif isinstance(data) == str:
             try:
                 self.cur.execute("DELETE FROM studios WHERE name LIKE ?", (data,)).fetchone()
                 self.conn.commit()
@@ -127,7 +127,7 @@ class BotDB(object):
 
     def edit_studio(self, data: int | str) -> bool:
         """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
-        if type(data) == int:
+        if isinstance(data) == int:
             try:
                 studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ?", (data,)).fetchall()
                 if studios and len(studios) > 0:
@@ -136,7 +136,7 @@ class BotDB(object):
                     return False
             except Error as e:
                 logger.exception(f"DB: failed to update studio with tg_id {data}, {e}")
-        elif type(data) == str:
+        elif isinstance(data) == str:
             try:
                 studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
                 if studio and len(studio) > 0:
