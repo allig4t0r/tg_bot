@@ -2,6 +2,7 @@
 import asyncio
 import config
 from pprint import pformat
+from sys import version_info
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.bot import DefaultBotProperties
@@ -28,6 +29,7 @@ async def main() -> None:
 
 if __name__ == '__main__':
     logger = log_init()
+    logger.info(f"Python version is: {version_info}")
     # logger.debug(f'Configuration: {pformat(config.__dict__)}')
     logger.info("tg_bot has started")
     asyncio.run(main())
