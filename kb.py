@@ -11,13 +11,13 @@ menu_kolya = [
 menu_admin = [
     [
         KeyboardButton(text=text.button_studio_create),
-        KeyboardButton(text=text.button_studio_edit),
+        KeyboardButton(text=text.button_studios_show),
         KeyboardButton(text=text.button_studio_delete)
     ],
     [
         KeyboardButton(text=text.button_show_log),
         KeyboardButton(text=text.button_studios_delete_old),
-        KeyboardButton(text=text.button_studios_show)
+        KeyboardButton(text=text.button_studios_message)
     ],
     [
         KeyboardButton(text=text.button_studios_show_traffic),
@@ -32,7 +32,8 @@ menu_studios = [
         KeyboardButton(text=text.button_iphone)
     ],
     [
-        KeyboardButton(text=text.button_traffic)
+        KeyboardButton(text=text.button_traffic),
+        KeyboardButton(text=text.button_fail)
     ]
 ]
 

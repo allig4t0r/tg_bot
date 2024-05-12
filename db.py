@@ -44,7 +44,8 @@ class BotDB(object):
     def get_studios(self) -> list | bool:
         """SELECT * FROM studios WHERE name LIKE DB_STUDIO_KEYWORD_LIKE"""
         try:
-            studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (config.DB_STUDIO_KEYWORD_LIKE,)).fetchall()
+            studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?",
+                                       (config.DB_STUDIO_KEYWORD_LIKE,)).fetchall()
             if studios and len(studios) > 0:
                 return studios
             else:
@@ -52,9 +53,32 @@ class BotDB(object):
         except Error as e:
             logger.exception(f"DB: failed to get studios, {e}")
 
+    def get_old_studios(self) -> list | bool:
+        """SELECT * FROM studios WHERE name LIKE Студия%_old^"""
+        try:
+            studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?",
+                                       (config.DB_OLD_STUDIOS_LIKE,)).fetchall()
+            if studios and len(studios) > 0:
+                return studios
+            else:
+                return False
+        except Error as e:
+            logger.exception(f"DB: failed to get ALL studios, {e}")
+
+    def get_all_studios(self) -> list | bool:
+        """SELECT * FROM studios"""
+        try:
+            studios = self.cur.execute("SELECT * FROM studios").fetchall()
+            if studios and len(studios) > 0:
+                return studios
+            else:
+                return False
+        except Error as e:
+            logger.exception(f"DB: failed to get ALL studios, {e}")
+
     def get_studio(self, data: int | str) -> list|None:
         """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
-        if isinstance(data) == int:
+        if isinstance(data, int):
             try:
                 studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ?", (data,)).fetchall()
                 if studios and len(studios) > 0:
@@ -63,7 +87,7 @@ class BotDB(object):
                     return False
             except Error as e:
                 logger.exception(f"DB: failed to get studio with tg_id {data}, {e}")
-        elif isinstance(data) == str:
+        elif isinstance(data, str):
             try:
                 studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
                 if studio and len(studio) > 0:
@@ -95,7 +119,7 @@ class BotDB(object):
         
     def delete_studio(self, data: int | str) -> bool:
         """DELETE FROM studios WHERE key_id/name LIKE ?"""
-        if isinstance(data) == int:
+        if isinstance(data, int):
             try:
                 self.cur.execute("DELETE FROM studios WHERE key_id LIKE ?", (data,)).fetchone()
                 self.conn.commit()
@@ -104,7 +128,7 @@ class BotDB(object):
             except Error as e:
                 logger.exception(f"DB: failed to delete studio with key_id {data}, {e}")
                 return False
-        elif isinstance(data) == str:
+        elif isinstance(data, str):
             try:
                 self.cur.execute("DELETE FROM studios WHERE name LIKE ?", (data,)).fetchone()
                 self.conn.commit()
@@ -117,7 +141,8 @@ class BotDB(object):
     def get_key(self, tg_id: int) -> list | bool:
         """SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ?"""
         try:
-            studios = self.cur.execute("SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ?", (tg_id,)).fetchall()
+            studios = self.cur.execute("SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ?",
+                                       (tg_id,)).fetchall()
             if studios and len(studios) > 0:
                 return studios
             else:
@@ -125,23 +150,15 @@ class BotDB(object):
         except Error as e:
             logger.exception(f"DB: failed to get key/keys for tg_id {tg_id}, {e}")
 
-    def edit_studio(self, data: int | str) -> bool:
-        """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
-        if isinstance(data) == int:
-            try:
-                studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ?", (data,)).fetchall()
-                if studios and len(studios) > 0:
-                    return studios
-                else:
-                    return False
-            except Error as e:
-                logger.exception(f"DB: failed to update studio with tg_id {data}, {e}")
-        elif isinstance(data) == str:
-            try:
-                studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
-                if studio and len(studio) > 0:
-                    return studio
-                else:
-                    return False
-            except Error as e:
-                logger.exception(f"DB: failed to update studio with name {data}, {e}")
+    def rename_studio(self, name: str, new_name: str) -> bool:
+        """UPDATE studios SET name = ? WHERE name LIKE ?"""
+        try:
+            self.cur.execute("UPDATE studios SET name = ? WHERE name LIKE ?", (new_name, name))
+            self.conn.commit()
+            if self.cur.rowcount < 1:
+                return False
+            else:
+                return True
+        except Error as e:
+            logger.exception(f"DB: failed to rename studio with name {name}, {e}")
+            return False

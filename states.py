@@ -11,3 +11,13 @@ class AddNewStudio(StatesGroup):
 
 class DeleteStudio(StatesGroup):
     key_id = State()
+
+class DeleteOldStudios(StatesGroup):
+    confirm = State()
+
+class RenewStudios(StatesGroup):
+    confirm = State()
+
+class SendMessageStudios(StatesGroup):
+    message = State()
+    confirm = State()

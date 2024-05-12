@@ -3,20 +3,15 @@ import asyncio
 from pprint import pformat
 from sys import version_info
 
-from aiogram import Bot, Dispatcher
-from aiogram.client.bot import DefaultBotProperties
-from aiogram.enums import ParseMode
+from aiogram import Dispatcher
 from aiogram.utils.chat_action import ChatActionMiddleware
 from aiogram_sqlite_storage.sqlitestore import SQLStorage
 
 import config
-from handlers import router
+from handlers import bot, router
 from log import log_init
 
-
 async def main() -> None:
-    global bot
-    bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     botinfo = await bot.get_me()
     logger.info(f"Bot ID: {botinfo.id}, Full Name: {botinfo.full_name}, Username: {botinfo.username}")
     fsm_storage = SQLStorage(config.DB_NAME, serializing_method='json')
