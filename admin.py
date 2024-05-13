@@ -36,7 +36,7 @@ async def delete_studio(msg: Message, state: FSMContext, old_key_id: int = -1) -
     with BotDB() as db, OutlineServer() as outline:
         if current_state == DeleteStudio.key_id:
             state_data = await state.get_data()
-            key_id = str(state_data.get("studio_key_id"))
+            key_id = state_data.get("studio_key_id")
         elif current_state == DeleteOldStudios.confirm and old_key_id != -1:
             key_id = old_key_id
         else:

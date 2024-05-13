@@ -54,7 +54,7 @@ class BotDB(object):
             logger.exception(f"DB: failed to get studios, {e}")
 
     def get_old_studios(self) -> list | bool:
-        """SELECT * FROM studios WHERE name LIKE Студия%_old^"""
+        """SELECT * FROM studios WHERE name LIKE Студия%_old%"""
         try:
             studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?",
                                        (config.DB_OLD_STUDIOS_LIKE,)).fetchall()

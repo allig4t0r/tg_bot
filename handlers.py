@@ -3,7 +3,7 @@ from hurry.filesize import size
 from prettytable import PrettyTable
 from typing import Any
 
-from aiogram import Bot, Router, F, flags
+from aiogram import Bot, Router, F
 from aiogram.client.bot import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import Message, FSInputFile
@@ -233,10 +233,7 @@ async def admin_show_traffic_studios(msg: Message, state: FSMContext):
                 else:
                     table.add_row([studios[i][2], size(key.used_bytes)])
                 i += 1
-            if current_state == WhereAmI.main_menu_admin:
-                await traffic_message.edit_text(f"{hcode(table)}")
-            elif current_state == WhereAmI.main_menu_kolya:
-                await traffic_message.edit_text(f"{hcode(table)}")
+            await traffic_message.edit_text(f"{hcode(table)}")
         else:
             if current_state == WhereAmI.main_menu_admin:
                 await msg.answer("Студий нет :)",
