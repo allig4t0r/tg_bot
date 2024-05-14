@@ -21,7 +21,8 @@ menu_admin = [
     ],
     [
         KeyboardButton(text=text.button_studios_show_traffic),
-        KeyboardButton(text=text.button_studios_renew)        
+        KeyboardButton(text=text.button_studios_renew),
+        KeyboardButton(text=text.button_admin_all_keys)
     ]
 ]
 

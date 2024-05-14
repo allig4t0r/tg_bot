@@ -15,8 +15,8 @@ async def create_studio(msg: Message, state: FSMContext):
     with BotDB() as db, OutlineServer() as outline:
         if not db.get_studio(state_data.get("studio_name")):
             new_key = outline.create_key(name=state_data.get("studio_name"))
-            new_studio = db.create_studio(tg_id=int(state_data.get("studio_tg_id")),
-                                          key_id=int(new_key.key_id),
+            new_studio = db.create_studio(tg_id=state_data.get("studio_tg_id"),
+                                          key_id=new_key.key_id,
                                           name=new_key.name,
                                           access_url=new_key.access_url)
             if new_studio:

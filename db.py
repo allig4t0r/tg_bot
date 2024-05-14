@@ -80,7 +80,8 @@ class BotDB(object):
         """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
         if isinstance(data, int):
             try:
-                studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ?", (data,)).fetchall()
+                studios = self.cur.execute("SELECT * FROM studios WHERE tg_id LIKE ? AND name NOT LIKE ?",
+                                           (data, config.DB_OLD_STUDIOS_LIKE)).fetchall()
                 if studios and len(studios) > 0:
                     return studios
                 else:
@@ -89,7 +90,8 @@ class BotDB(object):
                 logger.exception(f"DB: failed to get studio with tg_id {data}, {e}")
         elif isinstance(data, str):
             try:
-                studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?", (data,)).fetchone()
+                studio = self.cur.execute("SELECT * FROM studios WHERE name LIKE ? AND name NOT LIKE ?",
+                                          (data, config.DB_OLD_STUDIOS_LIKE)).fetchone()
                 if studio and len(studio) > 0:
                     return studio
                 else:
@@ -106,7 +108,7 @@ class BotDB(object):
             else:
                 try:
                     self.cur.execute("INSERT INTO studios VALUES "
-                                     "(?, ?, ?, ?, ?)", (tg_id, key_id, name, access_url, datetime_now()))
+                                     "(?, ?, ?, ?, ?)", (int(tg_id), int(key_id), str(name), str(access_url), datetime_now()))
                     self.conn.commit()
                     logger.info(f"DB: studio {name} was created successfully")
                     return True
@@ -138,11 +140,11 @@ class BotDB(object):
                 logger.exception(f"DB: failed to delete studio with name {data}, {e}")
                 return False
         
-    def get_key(self, tg_id: int) -> list | bool:
-        """SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ?"""
+    def get_key_filtered(self, tg_id: int) -> list | bool:
+        """SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE tg_id AND name NOT LIKE DB_OLD_STUDIOS_LIKE"""
         try:
-            studios = self.cur.execute("SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ?",
-                                       (tg_id,)).fetchall()
+            studios = self.cur.execute("SELECT tg_id, name, access_url FROM studios WHERE tg_id LIKE ? AND name NOT LIKE ?",
+                                       (tg_id, config.DB_OLD_STUDIOS_LIKE)).fetchall()
             if studios and len(studios) > 0:
                 return studios
             else:
@@ -150,15 +152,15 @@ class BotDB(object):
         except Error as e:
             logger.exception(f"DB: failed to get key/keys for tg_id {tg_id}, {e}")
 
-    def rename_studio(self, name: str, new_name: str) -> bool:
-        """UPDATE studios SET name = ? WHERE name LIKE ?"""
+    def rename_studio(self, key_id: int, new_name: str) -> bool:
+        """UPDATE studios SET name = ? WHERE key_id LIKE ?"""
         try:
-            self.cur.execute("UPDATE studios SET name = ? WHERE name LIKE ?", (new_name, name))
+            self.cur.execute("UPDATE studios SET name = ? WHERE key_id LIKE ?", (str(new_name), int(key_id)))
             self.conn.commit()
             if self.cur.rowcount < 1:
                 return False
             else:
                 return True
         except Error as e:
-            logger.exception(f"DB: failed to rename studio with name {name}, {e}")
+            logger.exception(f"DB: failed to rename studio with key_id {key_id} to {new_name}, {e}")
             return False

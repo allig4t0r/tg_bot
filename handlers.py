@@ -1,6 +1,4 @@
 import logging
-from hurry.filesize import size
-from prettytable import PrettyTable
 from typing import Any
 
 from aiogram import Bot, Router, F
@@ -11,12 +9,13 @@ from aiogram.filters import CommandStart
 from aiogram.utils.markdown import hbold, hpre, hcode
 from aiogram.handlers import ErrorHandler
 from aiogram.fsm.context import FSMContext
+from hurry.filesize import size
+from prettytable import PrettyTable
 
 from outline import OutlineServer
 from states import WhereAmI, AddNewStudio, DeleteStudio, DeleteOldStudios, RenewStudios, SendMessageStudios
 from db import BotDB
 from log import log_tail
-
 import admin
 import kb
 import text
@@ -120,6 +119,84 @@ async def admin_input_studio_key_id(msg: Message, state: FSMContext):
         await msg.answer("Нужно число, Повелитель!",
                          reply_markup=kb.ReplyKeyboardRemove())
 
+# ================ RENEW КЛЮЧЕЙ ВСЕХ СТУДИЙ
+
+@router.message(WhereAmI.main_menu_admin, F.text.casefold() == text.button_studios_renew.casefold())
+async def admin_renew_studio_keys_start(msg: Message, state: FSMContext):
+    await state.set_state(RenewStudios.confirm)
+    await msg.answer("Обновить ключи всех студий, Хозяин?",
+                     reply_markup=kb.ReplyKeyboardRemove())
+
+@router.message(RenewStudios.confirm, F.text.casefold() == text.text_yes.casefold())
+async def admin_renew_studio_keys(msg: Message, state: FSMContext):
+    with BotDB() as db, OutlineServer() as outline:
+        studios = db.get_studios()
+        if studios:
+            i = 0
+            message_status = await msg.answer("Начинаю renew студий, хозяин.")
+            while (i < len(studios)):
+                await message_status.edit_text(f"Начинаю обработку студии {hcode(studios[i][2])}")
+                text = ''
+                try:
+                    outline.rename_key(key_id=str(studios[i][1]),
+                                       name=studios[i][2] + '_old')
+                    logger.debug(f"OUTLINE: key with key_id {studios[i][1]} and name {studios[i][2]} was "
+                                "renamed to _old")
+                    text += f"OUTLINE: ключ {hcode(studios[i][2])} был переименован ✔️\n"
+                except Exception as e:
+                    logger.exception("OUTLINE: didn't manage to rename a key with "
+                                     f"key_id {studios[i][1]} and name {studios[i][2]}, {e}")
+                    text += f"OUTLINE: ключ {hcode(studios[i][2])} НЕ был переименован ❌\n"
+                rename_studio = db.rename_studio(key_id=studios[i][1],
+                                                 new_name=studios[i][2] + '_old')
+                if rename_studio:
+                    text += f"DB: {hcode(studios[i][2])} была переименована ☑️\n\n"
+                    try:
+                        new_key = outline.create_key(name=studios[i][2])
+                        logger.debug(f"OUTLINE: created new key with key_id {new_key.key_id} and name {new_key.name}")
+                        text += f"OUTLINE: ключ {hcode(studios[i][2])} был создан заново ✔️\n"
+                    except Exception as e:
+                        logger.exception("OUTLINE: didn't manage to create a key with "
+                                         f"key_id {new_key.key_id} and name {new_key.name}, {e}")
+                        text += f"OUTLINE: ключ {hcode(studios[i][2])} НЕ был пересоздан ❌\n"
+                    new_studio = db.create_studio(tg_id=studios[i][0],
+                                                  key_id=new_key.key_id,
+                                                  name=new_key.name,
+                                                  access_url=new_key.access_url)
+                    if new_studio:
+                        logger.debug(f"DB: created new studio with key_id {new_key.key_id} and name {new_key.name}")
+                        text += f"DB: {hcode(studios[i][2])} была создана заново ☑️\n\n"
+                        studio_message = f"Новый ключ для {hcode(new_key.name)}:\n\n{hpre(new_key.access_url)}"
+                        try:
+                            await bot.send_message(studios[i][0], studio_message)
+                            logger.debug(f"BOT: sent new key to studio {new_key.name}")
+                            text += f"Послано сообщение для студии {hcode(new_key.name)} ☑️"
+                        except Exception as e:
+                            logger.exception(f"BOT: failed to send the key to studio {new_key.name}, {e}")
+                            text += f"НЕ послано сообщение для студии {hcode(new_key.name)} ❌"
+                    else:
+                        logger.error("DB: didn't manage to create studio with "
+                                     f"key_id {new_key.key_id} and name {new_key.name}")
+                        text += f"DB: {hcode(new_key.name)} НЕ была пересоздана ❌\n"
+                else:
+                    logger.error("DB: didn't manage to rename studio with "
+                                 f"key_id {studios[i][1]} and name {studios[i][2]}")
+                    text += f"DB: {hcode(studios[i][2])} НЕ была переименована ❌\n\n"
+                await msg.answer(text)
+                i += 1
+            await message_status.delete()
+        else:
+            await msg.answer("А чот студий и нету =D",
+                       reply_markup=kb.keyboard_admin)
+    await msg.answer("Готово, хозяин!",
+                     reply_markup=kb.keyboard_admin)
+    await state.clear()
+    await state.set_state(WhereAmI.main_menu_admin)
+
+@router.message(RenewStudios.confirm)
+async def admin_renew_studio_keys_confirm(msg: Message):
+    await msg.answer("Хочу чёткий ответ, без этих соплей")
+
 # ================ ПОКАЗАТЬ СТУДИИ
 
 @router.message(WhereAmI.main_menu_admin, F.text.casefold() == text.button_studios_show.casefold())
@@ -154,7 +231,7 @@ async def admin_delete_old_studios(msg: Message, state: FSMContext):
         if studios:
             i = 0
             while (i < len(studios)):
-                await msg.answer(f"Нахуй идёт {studios[i][2]}")
+                await msg.answer(f"Нахуй идёт {hcode(studios[i][2])}")
                 await admin.delete_studio(msg, state, studios[i][1])
                 i += 1
         else:
@@ -241,6 +318,30 @@ async def admin_show_traffic_studios(msg: Message, state: FSMContext):
             elif current_state == WhereAmI.main_menu_kolya:
                 await msg.answer("Колян!!! Студий не существует 🌚",
                                  reply_markup=kb.keyboard_kolya)
+        # говнокод, TODO: полная обвязка с таблицей guests для не_студий
+        if current_state == WhereAmI.main_menu_kolya:
+            kolya = outline.get_key('35')
+            pizdyuk = outline.get_key('36')
+            await msg.answer("Экстра ключи (трафик суммарно за 30 последних дней):\n\n"
+                             f"{kolya.name} {size(kolya.used_bytes)}\n"
+                             f"{pizdyuk.name} {size(pizdyuk.used_bytes)}")
+
+# ================ ПОКАЗАТЬ ВСЕ КЛЮЧИ НЕ_СТУДИЙ С СЕРВЕРА
+
+@router.message(WhereAmI.main_menu_admin, F.text.casefold() == text.button_admin_all_keys.casefold())
+async def admin_show_non_studio_keys(msg: Message):
+    with OutlineServer() as outline:
+        keys = outline.get_keys()
+        not_studios = []
+        for key in keys:
+            if not key.name.startswith(config.DB_STUDIO_KEYWORD):
+                filter = key.name + ' → ' + size(key.used_bytes)
+                not_studios.append(filter)
+        message = '\n'.join(str(kk) for kk in not_studios)
+        await msg.answer(f"{message}",
+                         reply_markup=kb.keyboard_admin)
+
+# ================
 
 @router.message(WhereAmI.main_menu_admin)
 async def admin_handler(msg: Message):
@@ -259,7 +360,7 @@ async def kolya_handler(msg: Message):
 @router.message(WhereAmI.main_menu_studios, F.text.casefold() == text.button_key.casefold())
 async def studios_show_key(msg: Message):
     with BotDB() as db:
-        keys = db.get_key(msg.from_user.id)
+        keys = db.get_key_filtered(msg.from_user.id)
         if keys:
             i = 0
             while (i < len(keys)):
