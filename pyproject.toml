@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "tg-bot"
+version = "0.1.0"
+description = ""
+authors = ["AG <allig4t0r@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiogram = "~3.6.0"
+aiogram-sqlite-storage = "~1.0.0"
+outline-vpn-api = "~6.2.0"
+"hurry.filesize" = "~0.9"
+prettytable = "~3.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
