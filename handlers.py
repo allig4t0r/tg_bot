@@ -306,7 +306,7 @@ async def admin_show_traffic_studios(msg: Message, state: FSMContext):
             while (i < len(studios)):
                 key = outline.get_key(str(studios[i][1]))
                 if key.used_bytes is None:
-                    table.add_row([studios[i][2], 'ноль байтиков'])
+                    table.add_row([studios[i][2], '0G'])
                 else:
                     table.add_row([studios[i][2], size(key.used_bytes)])
                 i += 1
