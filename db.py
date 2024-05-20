@@ -41,11 +41,16 @@ class BotDB(object):
         else:
             logger.debug(f"DB: database {self.db_name} was NOT closed")
 
-    def get_studios(self) -> list | bool:
-        """SELECT * FROM studios WHERE name LIKE DB_STUDIO_KEYWORD_LIKE"""
+    def get_studios(self, with_old: bool = False) -> list | bool:
+        """SELECT * FROM studios WHERE name LIKE DB_STUDIO_KEYWORD_LIKE AND NOT LIKE _old"""
         try:
-            studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?",
+            if with_old:
+                studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ?",
                                        (config.DB_STUDIO_KEYWORD_LIKE,)).fetchall()
+            else:
+                studios = self.cur.execute("SELECT * FROM studios WHERE name LIKE ? AND name NOT LIKE ?",
+                                           (config.DB_STUDIO_KEYWORD_LIKE,
+                                            config.DB_OLD_STUDIOS_LIKE)).fetchall()
             if studios and len(studios) > 0:
                 return studios
             else:

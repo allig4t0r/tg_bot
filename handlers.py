@@ -135,6 +135,23 @@ async def admin_renew_studio_keys(msg: Message, state: FSMContext):
             i = 0
             message_status = await msg.answer("Начинаю renew студий, хозяин.")
             while (i < len(studios)):
+                old_key = outline.get_key(studios[i][1])
+                used_bytes = old_key.used_bytes
+                if used_bytes is not None:
+                    traffic_message = f"За предыдущий месяц использовано {hcode(size(old_key.used_bytes))} " \
+                                    f"для студии {hcode(old_key.name)}"
+                    admin_message = f"{hcode(old_key.name)} : {hcode(size(old_key.used_bytes))}"
+                    if (old_key.used_bytes // (1024*1024*1024)) > 50:
+                        over_limit = old_key.used_bytes - config.TRAFFIC_LIMIT
+                        pay_over_limit = over_limit // config.TRAFFIC_LIMIT + 1
+                        traffic_message += f"\n\nПерерасход: {size(over_limit)} = {pay_over_limit*config.PAY_OVER_LIMIT} рублей"
+                        admin_message += f"\nOver the limit: {hcode(pay_over_limit*config.PAY_OVER_LIMIT)} рублей"
+                else:
+                    traffic_message = f"За предыдущий месяц использовано {hcode('0G')} " \
+                                    f"для студии {hcode(old_key.name)}"
+                    admin_message = f"{hcode(old_key.name)} : {hcode('а тут ничего')}"
+                await bot.send_message(studios[i][0], traffic_message)
+                await bot.send_message(users.backup_admin, admin_message)
                 await message_status.edit_text(f"Начинаю обработку студии {hcode(studios[i][2])}")
                 text = ''
                 try:
@@ -202,7 +219,7 @@ async def admin_renew_studio_keys_confirm(msg: Message):
 @router.message(WhereAmI.main_menu_admin, F.text.casefold() == text.button_studios_show.casefold())
 async def admin_show_studios(msg: Message, state: FSMContext):
     with BotDB() as db:
-        studios = db.get_studios()
+        studios = db.get_studios(with_old=True)
         if studios:
             message = '\n'.join(str(s) for s in studios)
             current_state = await state.get_state()
@@ -297,7 +314,7 @@ async def admin_show_traffic_studios(msg: Message, state: FSMContext):
     await msg.answer("Трафик всех студий")
     traffic_message = await msg.answer("Собираю данные, хозяин…")
     with BotDB() as db, OutlineServer() as outline:
-        studios = db.get_studios()
+        studios = db.get_studios(with_old=True)
         current_state = await state.get_state()
         if studios:
             i = 0
@@ -323,8 +340,8 @@ async def admin_show_traffic_studios(msg: Message, state: FSMContext):
             kolya = outline.get_key('35')
             pizdyuk = outline.get_key('36')
             await msg.answer("Экстра ключи (трафик суммарно за 30 последних дней):\n\n"
-                             f"{kolya.name} {size(kolya.used_bytes)}\n"
-                             f"{pizdyuk.name} {size(pizdyuk.used_bytes)}")
+                             f"{kolya.name} {size(int(kolya.used_bytes or 0))}\n"
+                             f"{pizdyuk.name} {size(int(pizdyuk.used_bytes or 0))}")
 
 # ================ ПОКАЗАТЬ ВСЕ КЛЮЧИ НЕ_СТУДИЙ С СЕРВЕРА
 
@@ -335,9 +352,12 @@ async def admin_show_non_studio_keys(msg: Message):
         not_studios = []
         for key in keys:
             if not key.name.startswith(config.DB_STUDIO_KEYWORD):
-                filter = key.name + ' → ' + size(key.used_bytes)
+                filter = key.name + ' → ' + size(int(key.used_bytes or 0))
                 not_studios.append(filter)
-        message = '\n'.join(str(kk) for kk in not_studios)
+        if not_studios is None:
+            message = "Нет не_студий :)"
+        else:
+            message = '\n'.join(str(kk) for kk in not_studios)
         await msg.answer(f"{message}",
                          reply_markup=kb.keyboard_admin)
 
