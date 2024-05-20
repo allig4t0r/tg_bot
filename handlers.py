@@ -151,7 +151,9 @@ async def admin_renew_studio_keys(msg: Message, state: FSMContext):
                                     f"для студии {hcode(old_key.name)}"
                     admin_message = f"{hcode(old_key.name)} : {hcode('а тут ничего')}"
                 await bot.send_message(studios[i][0], traffic_message)
+                logger.debug(f"BOT: sent traffic info to studio {old_key.name}")
                 await bot.send_message(users.backup_admin, admin_message)
+                logger.debug(f"BOT: sent traffic info to admin about {old_key.name}")
                 await message_status.edit_text(f"Начинаю обработку студии {hcode(studios[i][2])}")
                 text = ''
                 try:
