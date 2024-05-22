@@ -24,11 +24,11 @@ class BotDB(object):
                              "access_url TEXT, date_created TEXT)")
             self.conn.commit()
             logger.debug(f"DB: table {config.DB_TABLE_STUDIOS} was initialized")
-            self.cur.execute("CREATE TABLE IF NOT EXISTS guests"
-                             "(tg_id INTEGER, key_id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE, "
-                             "access_url TEXT, date_created TEXT)")
-            self.conn.commit()
-            logger.debug(f"DB: table {config.DB_TABLE_GUESTS} was initialized")
+            # self.cur.execute("CREATE TABLE IF NOT EXISTS guests"
+            #                  "(tg_id INTEGER, key_id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE, "
+            #                  "access_url TEXT, date_created TEXT)")
+            # self.conn.commit()
+            # logger.debug(f"DB: table {config.DB_TABLE_GUESTS} was initialized")
             logger.info(f"DB: {self.db_name} was initialized")
             return self
         except Error as e:
