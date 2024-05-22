@@ -7,9 +7,9 @@ from aiogram import Dispatcher
 from aiogram.utils.chat_action import ChatActionMiddleware
 from aiogram_sqlite_storage.sqlitestore import SQLStorage
 
-import config
-from handlers import bot, router
-from log import log_init
+import misc.config as config
+from bot.handlers import bot, router
+from bot.log import log_init
 
 async def main() -> None:
     botinfo = await bot.get_me()

@@ -3,10 +3,10 @@ import logging
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
-import kb
-from states import WhereAmI, DeleteStudio, DeleteOldStudios
-from db import BotDB
-from outline import OutlineServer, OutlineServerErrorException, OutlineLibraryException
+import bot.kb as kb
+from bot.states import WhereAmI, DeleteStudio, DeleteOldStudios
+from misc.db import BotDB
+from misc.outline import OutlineServer, OutlineServerErrorException, OutlineLibraryException
 
 logger = logging.getLogger(__name__)
 
