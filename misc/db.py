@@ -1,8 +1,8 @@
-import config
 import logging
-
 from sqlite3 import connect, Error
 from datetime import datetime, timezone
+
+import misc.config as config
 
 logger = logging.getLogger(__name__)
 

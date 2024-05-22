@@ -12,27 +12,27 @@ from aiogram.fsm.context import FSMContext
 from hurry.filesize import size
 from prettytable import PrettyTable
 
-from outline import OutlineServer
-from states import (WhereAmI,
+from misc.outline import OutlineServer
+from misc.db import BotDB
+from bot.states import (WhereAmI,
                     AddNewStudio,
                     DeleteStudio,
                     DeleteOldStudios,
                     RenewStudios,
                     SendMessageStudios,
                     AnonymousFeedback)
-from db import BotDB
-from log import log_tail
-import admin
-import kb
-import text
-import users
-import config
+from bot.log import log_tail
+import bot.admin as admin
+import bot.kb as kb
+import bot.text as text
+import misc.users as users
+import misc.config as config
 
 logger = logging.getLogger(__name__)
 bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 router = Router()
 
-@router.message(CommandStart(deep_link=True))
+@router.message(CommandStart())
 async def start_handler(msg: Message, state: FSMContext, command: CommandObject) -> None:
     args = command.args
     if args == 'feedback':

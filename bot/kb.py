@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, \
       KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
-import text
+import bot.text as text
 
 menu_kolya = [
     [

@@ -1,9 +1,9 @@
-import config
 import subprocess
 from logging import basicConfig, getLogger, Formatter, Logger
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+import misc.config as config
 
 def log_init() -> Logger:
     formatter = Formatter(fmt=config.LOG_FORMAT)

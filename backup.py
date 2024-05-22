@@ -1,9 +1,10 @@
-import yadisk
-import config
-import asyncio
-from datetime import date
 import logging
-import config
+from datetime import date
+
+import yadisk
+import asyncio
+
+import misc.config as config
 
 async def main():
 
