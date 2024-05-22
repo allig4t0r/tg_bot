@@ -12,6 +12,7 @@ aiogram-sqlite-storage = "~1.0.0"
 outline-vpn-api = "~6.2.0"
 "hurry.filesize" = "~0.9"
 prettytable = "~3.10.0"
+yadisk = "^2.1.0"
 
 
 [build-system]
