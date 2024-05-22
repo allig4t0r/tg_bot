@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 router = Router()
 
-@router.message(CommandStart())
+@router.message(CommandStart(deep_link=True))
 async def start_handler(msg: Message, state: FSMContext) -> None:
     await msg.answer(f"Твой ID: {msg.from_user.id}")
     if msg.from_user.id == users.kolya:
