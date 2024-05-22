@@ -5,15 +5,21 @@ from aiogram import Bot, Router, F
 from aiogram.client.bot import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import Message, FSInputFile
-from aiogram.filters import CommandStart
-from aiogram.utils.markdown import hbold, hpre, hcode
+from aiogram.filters import CommandStart, CommandObject
+from aiogram.utils.markdown import hbold, hpre, hcode, hblockquote
 from aiogram.handlers import ErrorHandler
 from aiogram.fsm.context import FSMContext
 from hurry.filesize import size
 from prettytable import PrettyTable
 
 from outline import OutlineServer
-from states import WhereAmI, AddNewStudio, DeleteStudio, DeleteOldStudios, RenewStudios, SendMessageStudios
+from states import (WhereAmI,
+                    AddNewStudio,
+                    DeleteStudio,
+                    DeleteOldStudios,
+                    RenewStudios,
+                    SendMessageStudios,
+                    AnonymousFeedback)
 from db import BotDB
 from log import log_tail
 import admin
@@ -27,9 +33,14 @@ bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseM
 router = Router()
 
 @router.message(CommandStart(deep_link=True))
-async def start_handler(msg: Message, state: FSMContext) -> None:
-    await msg.answer(f"Твой ID: {msg.from_user.id}")
-    if msg.from_user.id == users.kolya:
+async def start_handler(msg: Message, state: FSMContext, command: CommandObject) -> None:
+    args = command.args
+    if args == 'feedback':
+        await msg.answer(f"Включаем {hcode('анонимный')} режим…")
+        await state.set_state(AnonymousFeedback.message)
+        await msg.answer("Включено. Можно писать сообщение",
+                         reply_markup=kb.ReplyKeyboardRemove())
+    elif msg.from_user.id == users.kolya:
         await state.set_state(WhereAmI.main_menu_kolya)
         await msg.answer(f"Добро пожаловать, {hbold('Властелин Студий')}!",)
         await msg.answer_photo(photo=FSInputFile('vlastelin.jpg'),
@@ -51,13 +62,14 @@ async def start_handler(msg: Message, state: FSMContext) -> None:
                 await msg.answer(text.text_desc,
                                  reply_markup=kb.keyboard_studios)
             else:
+                await msg.answer(f"Твой ID: {msg.from_user.id}")
                 await msg.answer_sticker(sticker="CAACAgQAAxkBAAEqfYFmAueHoh5q0-m73Nir_Yqm8ZlZ3wACegADJkm4A8VPV5-FVmVTNAQ", 
                                  reply_markup=kb.ReplyKeyboardRemove())
 
 # ================================================================================================
 # моё
 
-# ================ ОТМЕНА ЛЮБЫХ КОМАНД
+# ================ ОТМЕНА КОМАНД
 
 @router.message(AddNewStudio.studio_name, F.text.casefold() == text.text_cancel.casefold())
 @router.message(AddNewStudio.tg_id, F.text.casefold() == text.text_cancel.casefold())
@@ -65,13 +77,49 @@ async def start_handler(msg: Message, state: FSMContext) -> None:
 @router.message(DeleteOldStudios.confirm, F.text.casefold() == text.text_no.casefold())
 @router.message(RenewStudios.confirm, F.text.casefold() == text.text_no.casefold())
 @router.message(SendMessageStudios.confirm, F.text.casefold() == text.text_no.casefold())
-async def admin_cancel_handler(message: Message, state: FSMContext) -> None:
+async def admin_cancel_handler(msg: Message, state: FSMContext) -> None:
     current_state = await state.get_state()
-    logging.info("STATE: cancelling state %r", current_state)
+    logger.debug("STATE: cancelling state %r", current_state)
     await state.clear()
     await state.set_state(WhereAmI.main_menu_admin)
-    await message.answer("Галя, у нас отмена!",
+    await msg.answer("Галя, у нас отмена!",
                          reply_markup=kb.keyboard_admin)
+
+@router.message(AnonymousFeedback.confirm, F.text.casefold() == text.text_no.casefold())
+async def anon_cancel_handler(msg: Message, state: FSMContext):
+    current_state = await state.get_state()
+    logger.debug("STATE: cancelling state %r", current_state)
+    await state.clear()
+    await state.set_state(AnonymousFeedback.message)
+    await msg.answer("Галя, у нас отмена! Может ещё попробуем?")
+
+# ================ АНОНИМНЫЙ ФИДБЕК
+
+@router.message(AnonymousFeedback.message)
+async def anon_send_message_handler(msg: Message, state: FSMContext):
+    await state.update_data(anon_message = msg.text)
+    await state.set_state(AnonymousFeedback.confirm)
+    await msg.answer(f"Отправляем это сообщение, верно? (да/нет)\n\n{hblockquote(msg.text)}")
+
+@router.message(AnonymousFeedback.confirm, F.text.casefold() == text.text_yes.casefold())
+async def anon_send_message(msg: Message, state: FSMContext):
+    state_data = await state.get_data()
+    anon_message = 'Анонимный фидбек:\n\n' + hblockquote(state_data.get("anon_message"))
+    try:
+        await bot.send_message(users.backup_admin, anon_message)
+        await bot.send_message(users.admin, anon_message)
+        logger.debug("FEEDBACK: new anonymous message was sent to admin")
+        await msg.answer("Успех :)")
+    except Exception as e:
+        await msg.answer("Прошу понять и простить, не получилось 🫠")
+        logger.debug(f"FEEDBACK: didn't manage to send anonymous message, {e}")
+    await state.clear()
+    await state.set_state(AnonymousFeedback.message)
+    await msg.answer("Стейт очищен, можно посылать новое")
+
+@router.message(AnonymousFeedback.confirm)
+async def anon_send_message_default(msg: Message):
+    await msg.answer("Нужно подтверждение текстом «да» или «нет»")
 
 # ================ ДОБАВЛЕНИЕ НОВОЙ СТУДИИ
 

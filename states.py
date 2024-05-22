@@ -21,3 +21,7 @@ class RenewStudios(StatesGroup):
 class SendMessageStudios(StatesGroup):
     message = State()
     confirm = State()
+
+class AnonymousFeedback(StatesGroup):
+    message = State()
+    confirm = State()
