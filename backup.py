@@ -1,13 +1,12 @@
 import logging
 from datetime import date
+from pathlib import Path
 
 import yadisk
 import asyncio
 
 import config
 
-# добавить конкретную команду для крона, бэкап кажд день в 23:04
-# 4 23 * * * /opt/tg_bot/do_backup.sh
 
 async def main():
 
@@ -42,7 +41,8 @@ async def main():
             logger.exception(f"RENAME CLOUD: some weird error, {e}")
         # uploading the new db backup
         try:
-            await yclient.upload(f"{config.DB_FILENAME}", f"/Приложения/{config.BACKUP_FOLDER}/{config.DB_FILENAME}")
+            await yclient.upload(f"{Path(config.BOT_FOLDER)/config.DB_FILENAME}",
+                                 f"/Приложения/{config.BACKUP_FOLDER}/{config.DB_FILENAME}")
             logger.info(f"CLOUD: {config.DB_FILENAME} was successfully uploaded")
         except FileNotFoundError:
             logger.error(f"LOCAL: {config.DB_FILENAME} was NOT found!")
@@ -56,7 +56,9 @@ async def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='backup.log', level=logging.DEBUG, format=config.LOG_FORMAT)
+    logging.basicConfig(filename=Path(config.BOT_FOLDER)/config.BACKUP_FILENAME,
+                        level=logging.DEBUG,
+                        format=config.LOG_FORMAT)
     logger = logging.getLogger(__name__)
     logger.info("Backup started")
     asyncio.run(main())
