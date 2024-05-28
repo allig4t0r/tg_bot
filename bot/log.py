@@ -3,11 +3,11 @@ from logging import basicConfig, getLogger, Formatter, Logger
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-import misc.config as config
+import config
 
 def log_init() -> Logger:
     formatter = Formatter(fmt=config.LOG_FORMAT)
-    file_handler = RotatingFileHandler(filename=Path(config.LOG_PATH)/config.LOG_FILENAME, 
+    file_handler = RotatingFileHandler(filename=Path(config.BOT_FOLDER)/config.LOG_FILENAME, 
                                        maxBytes=config.LOG_SIZE,
                                         backupCount=config.LOG_FILECOUNT)
     file_handler.setFormatter(formatter)
@@ -23,8 +23,8 @@ def log_init() -> Logger:
 
 def log_tail(rows: int):
     try:
-        # tail = subprocess.Popen(['tail', '-n', str(rows), Path(config.LOG_PATH)/config.LOG_FILENAME, '|', 'grep', 'ERROR'], stdout=subprocess.PIPE)
-        tail = subprocess.Popen(['tail', '-n', str(rows), Path(config.LOG_PATH)/config.LOG_FILENAME], stdout=subprocess.PIPE)
+        # tail = subprocess.Popen(['tail', '-n', str(rows), Path(config.BOT_FOLDER)/config.LOG_FILENAME, '|', 'grep', 'ERROR'], stdout=subprocess.PIPE)
+        tail = subprocess.Popen(['tail', '-n', str(rows), Path(config.BOT_FOLDER)/config.LOG_FILENAME], stdout=subprocess.PIPE)
         # lines = tail.stdout.readlines()
         lines = tail.stdout
         return lines

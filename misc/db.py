@@ -2,7 +2,7 @@ import logging
 from sqlite3 import connect, Error
 from datetime import datetime, timezone
 
-import misc.config as config
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ def datetime_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 class BotDB(object):
-    def __init__(self, db_name: str = config.DB_NAME):
+    def __init__(self, db_name: str = config.DB_FILENAME):
         self.db_name = db_name
         self.conn = None
     def __enter__(self):

@@ -26,7 +26,7 @@ import bot.admin as admin
 import bot.kb as kb
 import bot.text as text
 import misc.users as users
-import misc.config as config
+import config
 
 logger = logging.getLogger(__name__)
 bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))

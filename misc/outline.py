@@ -1,7 +1,7 @@
 import logging
 from outline_vpn.outline_vpn import OutlineVPN, OutlineServerErrorException, OutlineLibraryException
 
-import misc.config as config
+import config
 
 logger = logging.getLogger(__name__)
 
