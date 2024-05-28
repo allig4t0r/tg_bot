@@ -330,7 +330,7 @@ async def admin_send_studio_message(msg: Message, state: FSMContext):
     await msg.answer("Повелитель! Посылаю сообщения…")
     state_data = await state.get_data()
     with BotDB() as db:
-        studios = db.get_all_studios()
+        studios = db.get_studios()
         if studios:
             i = 0
             while (i < len(studios)):

@@ -70,17 +70,6 @@ class BotDB(object):
         except Error as e:
             logger.exception(f"DB: failed to get ALL studios, {e}")
 
-    def get_all_studios(self) -> list | bool:
-        """SELECT * FROM studios"""
-        try:
-            studios = self.cur.execute("SELECT * FROM studios").fetchall()
-            if studios and len(studios) > 0:
-                return studios
-            else:
-                return False
-        except Error as e:
-            logger.exception(f"DB: failed to get ALL studios, {e}")
-
     def get_studio(self, data: int | str) -> list|None:
         """SELECT * FROM studios WHERE tg_id/name LIKE ?"""
         if isinstance(data, int):
