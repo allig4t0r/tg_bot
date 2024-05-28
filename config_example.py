@@ -14,7 +14,9 @@ TRAFFIC_LIMIT = 50*1024*1024*1024
 PAY_OVER_LIMIT = 1000 #рублей за х1 лимита
 
 BOT_FOLDER = "/opt/tg_bot" # no trailing slash
+
 BACKUP_FOLDER = "tg_bot"
+BACKUP_FILENAME = "backup.log"
 
 DB_FILENAME = "tg_bot.db"
 DB_TABLE_STUDIOS = "studios"
