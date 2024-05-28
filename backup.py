@@ -4,7 +4,10 @@ from datetime import date
 import yadisk
 import asyncio
 
-import misc.config as config
+import config
+
+# добавить конкретную команду для крона, бэкап кажд день в 23:04
+# 4 23 * * * /opt/tg_bot/do_backup.sh
 
 async def main():
 
@@ -19,30 +22,30 @@ async def main():
         else:
             logger.error("YDISK_CLIENT_TOKEN is not found or valid")
             return
-        if await yclient.is_dir(f"/Приложения/{config.DB_FOLDER}"):
-            logger.info(f"CLOUD: {config.DB_FOLDER} folder exists")
+        if await yclient.is_dir(f"/Приложения/{config.BACKUP_FOLDER}"):
+            logger.info(f"CLOUD: {config.BACKUP_FOLDER} folder exists")
         else:
-            logger.error(f"CLOUD: {config.DB_FOLDER} folder does NOT exist!")
+            logger.error(f"CLOUD: {config.BACKUP_FOLDER} folder does NOT exist!")
             return
         # renaming the old db backup
         try:
-            await yclient.rename(f"/Приложения/{config.DB_FOLDER}/{config.DB_NAME}", \
-                                f"{config.DB_FOLDER}_{date.today().strftime('%d-%m-%Y')}.db")
-            logger.info(f"RENAME CLOUD: {config.DB_NAME} was successfully renamed")
+            await yclient.rename(f"/Приложения/{config.BACKUP_FOLDER}/{config.DB_FILENAME}", \
+                                f"{config.BACKUP_FOLDER}_{date.today().strftime('%d-%m-%Y')}.db")
+            logger.info(f"RENAME CLOUD: {config.DB_FILENAME} was successfully renamed")
         except yadisk.exceptions.PathExistsError:
-            logger.warning(f"RENAME CLOUD: today's {config.DB_NAME} backup already exists!")
+            logger.warning(f"RENAME CLOUD: today's {config.DB_FILENAME} backup already exists!")
             # return # not worth leaving
         except yadisk.exceptions.PathNotFoundError:
-            logger.warning(f"RENAME CLOUD: {config.DB_NAME} was not found!")
+            logger.warning(f"RENAME CLOUD: {config.DB_FILENAME} was not found!")
             # return # not worth it to leave now since we can do the upload
         except Exception as e:
             logger.exception(f"RENAME CLOUD: some weird error, {e}")
         # uploading the new db backup
         try:
-            await yclient.upload(f"{config.DB_NAME}", f"/Приложения/{config.DB_FOLDER}/{config.DB_NAME}")
-            logger.info(f"CLOUD: {config.DB_NAME} was successfully uploaded")
+            await yclient.upload(f"{config.DB_FILENAME}", f"/Приложения/{config.BACKUP_FOLDER}/{config.DB_FILENAME}")
+            logger.info(f"CLOUD: {config.DB_FILENAME} was successfully uploaded")
         except FileNotFoundError:
-            logger.error(f"LOCAL: {config.DB_NAME} was NOT found!")
+            logger.error(f"LOCAL: {config.DB_FILENAME} was NOT found!")
             return
         except yadisk.exceptions.ForbiddenError:
             logger.error("CLOUD: permission denied")
