@@ -1,6 +1,7 @@
 import logging
 from sqlite3 import connect, Error
 from datetime import datetime, timezone
+from pathlib import Path
 
 import config
 
@@ -11,13 +12,13 @@ def datetime_now() -> str:
 
 class BotDB(object):
     def __init__(self, db_name: str = config.DB_FILENAME):
-        self.db_name = db_name
+        self.db_path = Path(config.BOT_FOLDER)/db_name
         self.conn = None
     def __enter__(self):
         try:
-            logger.info(f"DB: initializing {self.db_name}...")
-            self.conn = connect(self.db_name)
-            logger.debug(f"DB: {self.db_name} was successfully opened")
+            logger.info(f"DB: initializing {self.db_path}...")
+            self.conn = connect(self.db_path)
+            logger.debug(f"DB: {self.db_path} was successfully opened")
             self.cur = self.conn.cursor()
             self.cur.execute("CREATE TABLE IF NOT EXISTS studios"
                              "(tg_id INTEGER, key_id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE, "
@@ -29,17 +30,17 @@ class BotDB(object):
             #                  "access_url TEXT, date_created TEXT)")
             # self.conn.commit()
             # logger.debug(f"DB: table {config.DB_TABLE_GUESTS} was initialized")
-            logger.info(f"DB: {self.db_name} was initialized")
+            logger.info(f"DB: {self.db_path} was initialized")
             return self
         except Error as e:
-            logger.exception(f"DB {self.db_name} was NOT initialized: {e}")
+            logger.exception(f"DB {self.db_path} was NOT initialized: {e}")
             return None
     def __exit__(self, exc_type, exc_value, traceback):
         if self.conn:
             self.conn.close()
-            logger.debug(f"DB: database {self.db_name} was closed")
+            logger.debug(f"DB: database {self.db_path} was closed")
         else:
-            logger.debug(f"DB: database {self.db_name} was NOT closed")
+            logger.debug(f"DB: database {self.db_path} was NOT closed")
 
     def get_studios(self, with_old: bool = False) -> list | bool:
         """SELECT * FROM studios WHERE name LIKE DB_STUDIO_KEYWORD_LIKE AND NOT LIKE _old"""

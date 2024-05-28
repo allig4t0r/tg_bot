@@ -2,7 +2,7 @@
 import asyncio
 from pprint import pformat
 from sys import version_info
-# from pathlib import Path
+from pathlib import Path
 
 from aiogram import Dispatcher
 from aiogram.utils.chat_action import ChatActionMiddleware
@@ -15,7 +15,7 @@ from bot.log import log_init
 async def main() -> None:
     botinfo = await bot.get_me()
     logger.info(f"Bot ID: {botinfo.id}, Full Name: {botinfo.full_name}, Username: {botinfo.username}")
-    fsm_storage = SQLStorage(config.BOT_FOLDER/config.DB_FILENAME, serializing_method='json')
+    fsm_storage = SQLStorage(Path(config.BOT_FOLDER)/config.DB_FILENAME, serializing_method='json')
     logger.info(f"Storage for FSM was initialized: {fsm_storage.db_path}")
     dp = Dispatcher(storage=fsm_storage)
     dp.include_router(router)
