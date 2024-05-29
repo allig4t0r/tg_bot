@@ -1,17 +1,17 @@
 from logging import INFO, ERROR, DEBUG
 
+BOT_TOKEN = $ {{ secrets.BOT_TOKEN_PROD }}
 
-BOT_TOKEN = 'int:string'
 # tg_bot app
-YDISK_CLIENT_ID = ''
-YDISK_CLIENT_SECRET = ''
-YDISK_CLIENT_TOKEN = ''
+YDISK_CLIENT_ID = $ {{ secrets.YDISK_CLIENT_ID }}
+YDISK_CLIENT_SECRET = $ {{ secrets.YDISK_CLIENT_SECRET }}
+YDISK_CLIENT_TOKEN = $ {{ secrets.YDISK_CLIENT_TOKEN }}
 
-OUTLINE_API_URL = 'https://ip:port/string'
-OUTLINE_CERT = ''
+OUTLINE_API_URL = $ {{ secrets.OUTLINE_API_URL }}
+OUTLINE_CERT = $ {{ secrets.OUTLINE_CERT }}
 
 TRAFFIC_LIMIT = 50*1024*1024*1024
-PAY_OVER_LIMIT = 1000 #рублей за х1 лимита
+PAY_OVER_LIMIT = 100 #рублей за х1 лимита
 
 BOT_FOLDER = "/opt/tg_bot" # no trailing slash
 
