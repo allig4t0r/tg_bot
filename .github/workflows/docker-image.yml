@@ -17,6 +17,7 @@ jobs:
       packages: write
       attestations: write
       id-token: write
+      pages: write
     
     steps:
     - name: Checkout repository
