@@ -25,10 +25,10 @@ RUN apt-get update && \
     apt-get install -y cron --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    echo '4 23 * * * . /tg_bot/.venv/bin/activate && python /tg_bot/backup.py && deactivate' | crontab
+    echo '4 23 * * * . /tg_bot/.venv/bin/activate && python /tg_bot/backup.py && deactivate' | crontab && \
+    service cron start
 
 LABEL org.opencontainers.image.source=https://github.com/allig4t0r/tg_bot
-LABEL com.centurylinklabs.watchtower.enable=true
 
 COPY . .
 COPY --from=builder /tg_bot/.venv ./.venv

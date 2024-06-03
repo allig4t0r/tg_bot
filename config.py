@@ -1,7 +1,7 @@
 from os import environ
 from logging import INFO, ERROR, DEBUG
 
-if environ.get('SHELL') != '/bin/zsh':
+if environ.get('BOT_MODE') == 'PROD':
     BOT_TOKEN = environ.get('BOT_TOKEN_PROD')
     BOT_FOLDER = "/opt/tg_bot" # no trailing slash
 else:
