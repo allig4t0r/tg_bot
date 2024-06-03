@@ -1,19 +1,23 @@
+from os import environ
 from logging import INFO, ERROR, DEBUG
 
-BOT_TOKEN = ${{ secrets.BOT_TOKEN_PROD }}
+if environ.get('SHELL') != '/bin/zsh':
+    BOT_TOKEN = environ.get('BOT_TOKEN_PROD')
+    BOT_FOLDER = "/opt/tg_bot" # no trailing slash
+else:
+    BOT_TOKEN = environ.get('BOT_TOKEN')
+    BOT_FOLDER = "/Users/ag/repos/tg_bot"
 
 # tg_bot app
-YDISK_CLIENT_ID = ${{ secrets.YDISK_CLIENT_ID }}
-YDISK_CLIENT_SECRET = ${{ secrets.YDISK_CLIENT_SECRET }}
-YDISK_CLIENT_TOKEN = ${{ secrets.YDISK_CLIENT_TOKEN }}
+YDISK_CLIENT_ID = environ.get('YDISK_CLIENT_ID')
+YDISK_CLIENT_SECRET = environ.get('YDISK_CLIENT_SECRET')
+YDISK_CLIENT_TOKEN = environ.get('YDISK_CLIENT_TOKEN')
 
-OUTLINE_API_URL = ${{ secrets.OUTLINE_API_URL }}
-OUTLINE_CERT = ${{ secrets.OUTLINE_CERT }}
+OUTLINE_API_URL = environ.get('OUTLINE_API_URL')
+OUTLINE_CERT = environ.get('OUTLINE_CERT')
 
 TRAFFIC_LIMIT = 50*1024*1024*1024
 PAY_OVER_LIMIT = 100 #рублей за х1 лимита
-
-BOT_FOLDER = "/opt/tg_bot" # no trailing slash
 
 BACKUP_FOLDER = "tg_bot"
 BACKUP_FILENAME = "backup.log"
