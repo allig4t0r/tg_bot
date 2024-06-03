@@ -4,9 +4,12 @@ from logging import INFO, ERROR, DEBUG
 if environ.get('BOT_MODE') == 'PROD':
     BOT_TOKEN = environ.get('BOT_TOKEN_PROD')
     BOT_FOLDER = "/opt/tg_bot" # no trailing slash
-else:
+elif environ.get('SHELL') == '/bin/zsh':
     BOT_TOKEN = environ.get('BOT_TOKEN')
     BOT_FOLDER = "/Users/ag/repos/tg_bot"
+else:
+    BOT_TOKEN = environ.get('BOT_TOKEN')
+    BOT_FOLDER = "/opt/tg_bot"
 
 # tg_bot app
 YDISK_CLIENT_ID = environ.get('YDISK_CLIENT_ID')
