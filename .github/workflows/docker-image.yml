@@ -37,6 +37,8 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=tg_bot-{{branch}}-{{sha}}
 
     - name: Build and push image
       id: push
@@ -44,8 +46,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: |
-          type=raw,value=tg_bot-{{branch}}-{{sha}}
+        tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
     # - name: Generate artifact attestation
