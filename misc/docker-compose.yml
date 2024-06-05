@@ -1,0 +1,52 @@
+services:
+
+  traefik:
+    image: "traefik:v3.0.1"
+    container_name: "traefik"
+    restart: always
+    networks:
+      - tg_bot
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entryPoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=allig4t0r@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  tg_bot:
+    image: ghcr.io/allig4t0r/tg_bot:latest
+    container_name: tg_bot
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - tg_bot
+    env_file:
+      - ./.env
+    volumes:
+      - "/opt/tg_bot:/opt/tg_bot"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+      - "traefik.enable=true"
+      - "traefik.http.routers.tg_bot.rule=Host(`admin.all1g.ru`) && Path(`/tg_webhook`)"
+      - "traefik.http.routers.tg_bot.entrypoints=websecure"
+      - "traefik.http.routers.tg_bot.tls.certresolver=myresolver"
+      - "traefik.http.routers.tg_bot.middlewares=traefik-compress"
+      - "traefik.http.services.tg_bot.loadbalancer.server.port=8080"
+
+networks:
+  tg_bot:
+    external: true
