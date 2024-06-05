@@ -37,7 +37,7 @@ def main() -> None:
     webhook_handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
-        secret_token=config.WEBHOOK_SECRET
+        secret_token=config.WEBHOOK_SECRET,
     )
     webhook_handler.register(app, path=config.WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
