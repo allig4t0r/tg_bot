@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-import asyncio
 from pprint import pformat
 from sys import version_info
 from pathlib import Path
-from aiohttp import web
+
+from aiohttp.web import run_app
+from aiohttp.web_app import Application
 
 from aiogram import Dispatcher, Bot
 from aiogram.utils.chat_action import ChatActionMiddleware
@@ -33,15 +34,14 @@ def main() -> None:
     # await bot.delete_webhook(drop_pending_updates=True)
     # await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     dp.startup.register(on_startup)
-    app = web.Application()
-    webhook_handler = SimpleRequestHandler(
+    app = Application()
+    SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
         secret_token=config.WEBHOOK_SECRET,
-    )
-    webhook_handler.register(app, path=config.WEBHOOK_PATH)
+    ).register(app, path=config.WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
-    web.run_app(app, host=config.WEBHOOK_SERVER_HOST, port=config.WEBHOOK_SERVER_PORT)
+    run_app(app, host=config.WEBHOOK_SERVER_HOST, port=config.WEBHOOK_SERVER_PORT)
 
 if __name__ == '__main__':
     logger = log_init()
