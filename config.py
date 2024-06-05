@@ -11,6 +11,13 @@ else:
     BOT_TOKEN = environ.get('BOT_TOKEN')
     BOT_FOLDER = "/opt/tg_bot"
 
+WEBHOOK_SERVER_HOST = "127.0.0.1"
+WEBHOOK_SERVER_PORT = 8080
+WEBHOOK_URL = "https://admin.all1g.ru"
+WEBHOOK_PATH = "/tg_webhook"
+# Only characters A-Z, a-z, 0-9, _ and - are allowed.
+WEBHOOK_SECRET = environ.get('WEBHOOK_SECRET') # head -c 16 /dev/urandom | base64 -w 0 - | tr '/+' '_-'
+
 # tg_bot app
 YDISK_CLIENT_ID = environ.get('YDISK_CLIENT_ID')
 YDISK_CLIENT_SECRET = environ.get('YDISK_CLIENT_SECRET')
