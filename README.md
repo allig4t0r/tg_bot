@@ -10,13 +10,17 @@ Most interesting files:
 
 Needed env variables (no quotes for values):
 
-BOT_MODE=PROD
-BOT_TOKEN_PROD
-YDISK_CLIENT_ID
-YDISK_CLIENT_SECRET
+  BOT_MODE=PROD  
+  BOT_TOKEN_PROD  
+  OUTLINE_API_URL  
+  OUTLINE_CERT
+
+For backup:
+
+YDISK_CLIENT_ID  
+YDISK_CLIENT_SECRET  
 YDISK_CLIENT_TOKEN
-OUTLINE_API_URL
-OUTLINE_CERT
+
 
 How to run:
 
