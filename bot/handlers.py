@@ -192,7 +192,8 @@ async def admin_renew_studio_keys(msg: Message, state: FSMContext):
                     if (old_key.used_bytes // (1024*1024*1024)) > 50:
                         over_limit = old_key.used_bytes - config.TRAFFIC_LIMIT
                         pay_over_limit = over_limit // config.TRAFFIC_LIMIT + 1
-                        traffic_message += f"\n\nПерерасход: {size(over_limit)} = {pay_over_limit*config.PAY_OVER_LIMIT} рублей"
+                        traffic_message += f"\n\nПерерасход (округление до 50G): {size(over_limit)} " \
+                                            f"= {pay_over_limit*config.PAY_OVER_LIMIT} рублей"
                         admin_message += f"\nOver the limit: {hcode(pay_over_limit*config.PAY_OVER_LIMIT)} рублей"
                 else:
                     traffic_message = f"За предыдущий месяц использовано {hcode('0G')} " \
