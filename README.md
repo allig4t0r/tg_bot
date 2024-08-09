@@ -48,5 +48,5 @@ Crontab:
 4 23 * * * docker exec tg_bot /tg_bot/.venv/bin/python /tg_bot/backup.py
 
 ```
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock scheduler
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name cron cron
 ```
