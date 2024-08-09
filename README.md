@@ -35,18 +35,8 @@ docker run -d \
   ghcr.io/allig4t0r/tg_bot:latest
 ```
 
-Backup cron image:
-
-```
-FROM docker:dind
-COPY crontab .
-CMD crontab crontab && crond -f
-```
-
 Crontab:
 
-4 23 * * * docker exec tg_bot /tg_bot/.venv/bin/python /tg_bot/backup.py
-
 ```
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name cron cron
+4 23 * * * docker exec tg_bot /tg_bot/.venv/bin/python /tg_bot/backup.py
 ```
